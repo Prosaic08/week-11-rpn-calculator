@@ -19,12 +19,15 @@ node-modules:
 
 # Perhaps flip the order of these to change the default test target.
 #
-default_test_target = rpn
 default_test_target = docker
 default_test_target = random
+default_test_target = rpn
 
+# Run the default test (above), and catch all of the output (stdout and stderr)
+# in less.  "less" is a pager.
+#
 test:
-	$(MAKE) -s $(default_test_target)
+	$(MAKE) -s $(default_test_target) 2>&1 | less
 
 random:
 	zsh misc/check-for-node_modules.zsh
