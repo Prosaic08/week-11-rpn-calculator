@@ -5,3 +5,10 @@
 # #
 # # You must have completed task 1 (not 2) before starting on this.
 # # **************************************************
+
+services:
+  rpn:
+     build: .
+     ports:
+       - "8000:8000"
+                
