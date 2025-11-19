@@ -10,4 +10,5 @@ image: "smblott/dcu-docker-gitlab-ci"
 
 test:
    script:
+      - make random
       - make rpn
