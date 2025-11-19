@@ -109,9 +109,9 @@ app.use(express.static('./static'));
 //
 var stack = [];
 
-app.post("/push", function(req, res) {
+//app.post("/push", function(req, res) {
   // this seems like the obvious place to start.
-});
+//});
 
 
 
@@ -138,10 +138,137 @@ app.post("/push", function(req, res) {
  * or "/push".
  */
 
+app.get("/length", function (req, res) {
+  res.setHeader("Content-Type", "application/json");
+   res.send(JSON.stringify(stack.length) + "\n");
+});
 
 
 
 
+
+app.post("/push", function (req, res) {
+  if (
+    !req.body ||
+    !req.body.hasOwnProperty("values") ||
+    !Array.isArray(req.body.values) ||
+    !req.body.values.every(v => Number.isFinite(v))
+  ) {
+     return res.status(400).send("bad request (invalid values)\n");
+}
+
+  stack = stack.concat(req.body.values);
+  res.setHeader("Content-Type", "application/json");
+  res.send(JSON.stringify(stack) + "\n");
+});
+
+
+
+
+
+app.get("/pop", function (req, res) {
+  if (stack.length === 0) {
+    return res.status(400).send("stack empty\n");
+  }
+
+  const value = stack.pop();
+  res.setHeader("Content-Type", "application/json");
+  res.send(JSON.stringify(value) + "\n");
+});
+
+
+
+app.get("/peek", function (req, res) {
+  if (stack.length === 0) {
+    return res.status(400).send("stack empty\n");
+  }
+
+  const value = stack[stack.length - 1];
+  res.setHeader("Content-Type", "application/json");
+  res.send(JSON.stringify(value) + "\n");
+});
+
+
+
+
+function binaryOp(res, opName, opFunc) {
+  if (stack.length < 2) {
+    return res.status(400).send("stack underflow\n");
+  }
+
+  const b = stack.pop();
+  const a = stack.pop();
+  const result = opFunc(a, b);
+
+  stack.push(result);
+  res.setHeader("Content-Type", "application/json");
+  res.send(JSON.stringify(result) + "\n");
+}
+
+
+
+
+
+function binaryOpGET(req, res, opFunc, div = false) {
+  if (stack.length < 2) {
+    return res.status(400).send("stack underflow\n");
+  }
+
+  const b = stack.pop();
+  const a = stack.pop();
+
+  if (div && b === 0) {
+    return res.status(400).send("division by zero\n");
+  }
+
+  const result = opFunc(a, b);
+  stack.push(result);
+
+    // MUST send empty string but KEEP JSON content-type
+  res.setHeader("Content-Type", "application/json");
+  res.status(200).send("");
+}
+
+// GET /add
+app.get("/add", function (req, res) {
+  binaryOpGET(req, res, (a, b) => a + b);
+});
+
+ // GET /sub
+app.get("/sub", function (req, res) {
+  binaryOpGET(req, res, (a, b) => a - b);
+});
+
+ // GET /subtract  (test expects this)
+app.get("/subtract", function (req, res) {
+  binaryOpGET(req, res, (a, b) => a - b);
+});
+
+ // GET /mul
+app.get("/mul", function (req, res) {
+  binaryOpGET(req, res, (a, b) => a * b);
+});
+
+// GET /multiply
+app.get("/multiply", function (req, res) {
+  binaryOpGET(req, res, (a, b) => a * b);
+});
+
+  // GET /div
+app.get("/div", function (req, res) {
+  binaryOpGET(req, res, (a, b) => a / b, true);
+});
+
+    // GET /divide
+app.get("/divide", function (req, res) {
+  binaryOpGET(req, res, (a, b) => a / b, true);
+});
+
+app.post("/clear", function (req, res) {
+  stack = [];
+  res.setHeader("Content-Type", "text/plain");
+  res.send("ok\n");
+});
 
 /**
  * YOUR WORK GOES **ABOVE** HERE.
@@ -158,4 +285,9 @@ app.listen(port, function() {
   console.log("listening on port", port, "...");
 });
 
-module.exports = app
+  module.exports = app
+
+
+
+
+
